@@ -4,6 +4,7 @@ using namespace cv;
 using namespace std;
 
 #include "faceDetect.h"
+#include "seetafaceDetect.h"
 #include "serv.h"
 #include "imghelpers.h"
 #include "TickCounter.h"
@@ -34,20 +35,24 @@ void SendImg(Mat& img)
 
     // 发送jpg
     serv.SendBuf((char*)jpeg_buf, jpeg_len);
-    printf("=====================%d\n", jpeg_len);
+    printf("=========SendBuf=========%d\n", jpeg_len);
     free(jpeg_buf);
     jpeg_buf = NULL;
 }
 
 int main(int argc, char **argv)
 {
+    //string ip = CUtils::getIpAddress();
+    //printf("%s\n", ip.c_str());
+
+
     if (! CUtils::isCpuMatch(""))
         return -1;
 
     wiringPiSetup();
     pinMode (0, OUTPUT);
 
-    faceDetect faceDT;
+    seetafaceDetect faceDT;
 
     VideoCapture cap(0);
     //cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
@@ -71,7 +76,7 @@ int main(int argc, char **argv)
         flip(frame, edges, 1);
 
         vector<Rect> faces;
-        faces = faceDT.detectAndDisplay(edges, 0.25);
+        faces = faceDT.detectAndDisplay(edges, 0.3);
 
 #define FACE_DISTANCE 100
         if (faces.size() > 0)
@@ -101,19 +106,21 @@ int main(int argc, char **argv)
                 }
             }
             else
-            {
                 bSendImg = true;
-            }
 
             if (bSendImg)
             {
-                SendImg(edges);
+                for (int i = 0; i < faces.size(); ++i)
+                {
+
+                    Mat roi_img = edges(faces[i]);
+                    SendImg(roi_img);
+                }
             }
         }
+
         facesOld = faces;
     }
 
     return 0;
 }
-
-

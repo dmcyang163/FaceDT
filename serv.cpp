@@ -8,7 +8,7 @@
 #define sleep(n)    Sleep(n)
 #endif
 
-
+#include "utils.h"
 
 CServ::CServ()
 {
@@ -49,3 +49,16 @@ int CServ::SendBuf(char* buf, int len)
 	return rc;
 }
 
+int CServ::SendBson(mongo::BSONObjBuilder* b)
+{
+	mongo::BSONObj obj = b->obj();
+	SendBuf( (char*)(obj.objdata()), obj.objsize());
+}
+
+void CServ::BsonObjBuilderAppendIp(mongo::BSONObjBuilder* b)
+{
+	string ip = CUtils::getIpAddress();
+	b->append("ip", ip);
+
+	//b->appendBinData("jpg", jpgLen, mongo::BinDataGeneral, buff);
+}

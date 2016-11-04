@@ -1,6 +1,16 @@
 #include "utils.h"
 #include <unistd.h>
 
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <map>
+using namespace std;
+
 CUtils::CUtils()
 {
 
@@ -26,7 +36,6 @@ string CUtils::getPath(string filename/* = ""*/)
 
     return filepath;
 }
-
 
 string CUtils::getCpuid()
 {
@@ -56,4 +65,69 @@ bool CUtils::isCpuMatch(string cpuid)
         return false;
 
     return true;
+}
+
+
+string CUtils::getIpAddress(string type/* = "eth0"*/)
+{
+    map<string, string> ips;
+
+    struct ifaddrs * ifAddrStruct = NULL;
+    void * tmpAddrPtr = NULL;
+
+    getifaddrs(&ifAddrStruct);
+
+    while (ifAddrStruct != NULL)
+    {
+        if (ifAddrStruct->ifa_addr->sa_family == AF_INET)
+        {   // check it is IP4
+            // is a valid IP4 Address
+            tmpAddrPtr = &((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
+            char addressBuffer[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
+            printf("%s IPV4 Address %s\n", ifAddrStruct->ifa_name, addressBuffer);
+
+            string strName = ifAddrStruct->ifa_name;
+            string strIp = addressBuffer;
+            ips.insert(pair<string, string>(strName, strIp));
+        }
+        else if (ifAddrStruct->ifa_addr->sa_family == AF_INET6)
+        {   // check it is IP6
+            // is a valid IP6 Address
+            tmpAddrPtr = &((struct sockaddr_in *)ifAddrStruct->ifa_addr)->sin_addr;
+            char addressBuffer[INET6_ADDRSTRLEN];
+            inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+            printf("%s IPV6 Address %s\n", ifAddrStruct->ifa_name, addressBuffer);
+
+            string strName = ifAddrStruct->ifa_name;
+            string strIp = addressBuffer;
+            ips.insert(pair<string, string>(strName, strIp));
+        }
+
+
+        ifAddrStruct = ifAddrStruct->ifa_next;
+    }
+
+    map<string, string>::iterator it = ips.find(type);
+    if (it != ips.end())
+        return it->second;
+
+    return "";
+}
+
+
+string CUtils::DoubleToString(double Input)
+{
+    stringstream Oss;
+    Oss << Input;
+    return Oss.str();
+}
+
+double CUtils::StringToDouble(string Input)
+{
+    double Result;
+    stringstream Oss;
+    Oss << Input;
+    Oss >> Result;
+    return Result;
 }

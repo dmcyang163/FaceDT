@@ -1,12 +1,11 @@
 #include "faceDetect.h"
 #include "TickCounter.h"
 
-static string face_cascade_name = "/home/pi/tom/test/faceDT/haarcascade_frontalface_alt.xml";
-static CascadeClassifier face_cascade;
-static String eyes_cascade_name = "/home/pi/tom/test/faceDT/haarcascade_eye_tree_eyeglasses.xml";
-static CascadeClassifier eyes_cascade;
 
-faceDetect::faceDetect()
+string cvfaceDetect::face_cascade_name = "/home/pi/tom/test/faceDT/haarcascade_frontalface_alt.xml";
+String cvfaceDetect::eyes_cascade_name = "/home/pi/tom/test/faceDT/haarcascade_eye_tree_eyeglasses.xml";
+
+cvfaceDetect::cvfaceDetect()
 {
 	if (!face_cascade.load(face_cascade_name)) {
 		printf("[error] 无法加载级联分类器文件！\n");
@@ -15,14 +14,15 @@ faceDetect::faceDetect()
 		printf("[error] 无法加载眼睛级联分类器文件！\n");
 	}
 }
-faceDetect::~faceDetect()
+cvfaceDetect::~cvfaceDetect()
 {
-
 }
 
-vector<Rect> faceDetect::detectAndDisplay(Mat& frame, double scale)
+vector<Rect> cvfaceDetect::detectAndDisplay(Mat& frame, double scale)
 {
 	CTickCounter tc("detectAndDisplay");
+	vector<Rect> faceRects;
+
 
 	Size dsize = Size(frame.cols * scale, frame.rows * scale);
 	Mat framer;
@@ -33,7 +33,7 @@ vector<Rect> faceDetect::detectAndDisplay(Mat& frame, double scale)
 	equalizeHist( grayFrame, grayFrame );
 
 	vector<Rect> faces;
-	vector<Rect> faces2;
+
 	face_cascade.detectMultiScale( grayFrame, faces, 1.1, 2, 0 | CV_HAAR_SCALE_IMAGE, Size(30, 30) );
 
 	for ( int i = 0; i < faces.size(); i++ ) {
@@ -60,10 +60,14 @@ vector<Rect> faceDetect::detectAndDisplay(Mat& frame, double scale)
 			rc.width = faces[i].width * 1.0 / scale;
 			rc.height = faces[i].height * 1.0 / scale;
 
-			rectangle(frame, rc, Scalar(0, 0, 255), 1, 1, 0);
-			faces2.push_back(rc);
+			boundCheckFaceRect(rc, frame.cols, frame.rows);
+
+			//rectangle(frame, rc, Scalar(0, 0, 255), 1, 1, 0);
+			faceRects.push_back(rc);
 		}
 	}
 
-	return faces2;
+	return faceRects;
 }
+
+
