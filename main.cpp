@@ -55,8 +55,8 @@ int main(int argc, char **argv)
     seetafaceDetect faceDT;
 
     VideoCapture cap(0);
-    //cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
-    //cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, 1280);
+    cap.set(CV_CAP_PROP_FRAME_HEIGHT, 720);
     if (!cap.isOpened())
     {
         printf("[error] 无法开启摄像头！\n");
@@ -76,9 +76,9 @@ int main(int argc, char **argv)
         flip(frame, edges, 1);
 
         vector<Rect> faces;
-        faces = faceDT.detectAndDisplay(edges, 0.3);
+        faces = faceDT.detectAndDisplay(edges, 0.2);
 
-#define FACE_DISTANCE 100
+#define FACE_DISTANCE 250
         if (faces.size() > 0)
         {
             bool bSendImg = false;

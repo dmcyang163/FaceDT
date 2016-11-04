@@ -53,10 +53,15 @@ vector<Rect> seetafaceDetect::detectAndDisplay(Mat& frame, double scale)
 		rc.width = faces[i].bbox.width * 1.0 / scale;
 		rc.height = faces[i].bbox.height * 1.0 / scale;
 
+		rc.x -= 40;
+		rc.y -= 40;
+		rc.width += 80;
+		rc.height += 80;
+
 		boundCheckFaceRect(rc, frame.cols, frame.rows);
 
 
-#if 0
+#if 1
 		float* feat = GetFeature(img, faces[i]);
 		printf("=========== %d\n", 2);
 		if (NULL == featOld)
